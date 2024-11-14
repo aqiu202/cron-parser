@@ -247,7 +247,7 @@ public final class QuartzCronExpression implements Serializable, Cloneable {
     protected transient int lastdayOffset = 0;
     protected transient boolean expressionParsed = false;
 
-    public static final int MAX_YEAR = Calendar.getInstance().get(Calendar.YEAR) + 100;
+    public static final int MAX_YEAR = Calendar.getInstance().get(Calendar.YEAR) + 1000;
 
     /**
      * Constructs a new <CODE>CronExpression</CODE> based on the specified
@@ -1192,7 +1192,7 @@ public final class QuartzCronExpression implements Serializable, Cloneable {
         while (!gotOne) {
 
             //if (endTime != null && cl.getTime().after(endTime)) return null;
-            if (cl.get(Calendar.YEAR) > 2999) { // prevent endless loop...
+            if (cl.get(Calendar.YEAR) > MAX_YEAR) { // prevent endless loop...
                 return null;
             }
 
@@ -1612,7 +1612,7 @@ public final class QuartzCronExpression implements Serializable, Cloneable {
     }
 
     protected boolean isLeapYear(int year) {
-        return ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0));
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
     }
 
     protected int getLastDayOfMonth(int monthNum, int year) {
@@ -1621,7 +1621,7 @@ public final class QuartzCronExpression implements Serializable, Cloneable {
             case 1:
                 return 31;
             case 2:
-                return (isLeapYear(year)) ? 29 : 28;
+                return isLeapYear(year) ? 29 : 28;
             case 3:
                 return 31;
             case 4:

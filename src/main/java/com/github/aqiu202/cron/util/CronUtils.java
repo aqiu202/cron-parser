@@ -6,7 +6,7 @@ import com.github.aqiu202.cron.exp.InvalidCronException;
 public abstract class CronUtils {
 
     public static boolean isLeapYear(final int year) {
-        return ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0));
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
     }
 
     public static int getLastDayOfMonth(final int month, final int year) {
@@ -20,7 +20,7 @@ public abstract class CronUtils {
             case 12:
                 return 31;
             case 2:
-                return (isLeapYear(year)) ? 29 : 28;
+                return isLeapYear(year) ? 29 : 28;
             case 4:
             case 6:
             case 9:

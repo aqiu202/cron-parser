@@ -38,7 +38,7 @@ public abstract class CronConstants {
     public static final int MIN_DAYS_OF_WEEK = 1;
     public static final int MAX_DAYS_OF_WEEK = 7;
     public static final int MIN_YEAR = 1970;
-    public static final int MAX_YEAR = 2099;
+    public static final int MAX_YEAR = 2999;
 
     public static final int PERIOD_SECOND = MAX_SECOND + 1;
     public static final int PERIOD_MINUTE = MAX_MINUTE + 1;

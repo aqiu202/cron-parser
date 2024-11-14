@@ -95,9 +95,9 @@ public abstract class AbstractCustomCronExpression<S, T> extends AbstractCronExp
         CronField daysOfMonth = cron.getDaysOfMonth();
         if (daysOfMonth instanceof EnumerableCronField) {
             ValueResult vw = ((EnumerableCronField) daysOfMonth).findAfter(dateTime.getDayOfMonth(), dateTime);
-            dateTime.setDayOfMonth(vw.getValue());
             int month0 = dateTime.getMonth();
-            if (vw.isOutOfBounds()) {
+            dateTime.setDayOfMonthSmart(vw.getValue());
+            if (month0 == dateTime.getMonth() && vw.isOutOfBounds()) {
                 dateTime.plusMonths(1);
             }
             ValueResult mvw = months.findAfter(dateTime.getMonth(), dateTime);
