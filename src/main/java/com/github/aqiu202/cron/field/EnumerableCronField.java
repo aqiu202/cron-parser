@@ -36,7 +36,7 @@ public class EnumerableCronField extends BaseCronField {
 
     public ValueResult findAfter(int value, DateTime<?> c) {
         int maxDays = 0;
-        if (index == CronConstants.INDEX_DAYS_OF_MONTH) {
+        if (index == CronConstants.INDEX_DAYS_OF_MONTH || index == CronConstants.INDEX_MONTH || index == CronConstants.INDEX_YEAR) {
             maxDays = CronUtils.getLastDayOfMonth(c.getMonth(), c.getYear());
         }
         for (Integer val : values) {
@@ -44,10 +44,20 @@ public class EnumerableCronField extends BaseCronField {
                 if (value > maxDays) {
                     break;
                 }
-                if (val >= value && val <= maxDays) {
-                    return new ValueResult(val);
+                if (val >= value) {
+                    return new ValueResult(val, false, val <= maxDays);
                 }
-            } else if (val >= value) {
+            } else if (index == CronConstants.INDEX_MONTH) {
+                if (val >= value) {
+                    maxDays = CronUtils.getLastDayOfMonth(val, c.getYear());
+                    return new ValueResult(val, false, c.getDayOfMonth() <= maxDays);
+                }
+            } else if (index == CronConstants.INDEX_YEAR) {
+                if (val >= value) {
+                    maxDays = CronUtils.getLastDayOfMonth(c.getMonth(), val);
+                    return new ValueResult(val, false, c.getDayOfMonth() <= maxDays);
+                }
+            }else if (val >= value) {
                 return new ValueResult(val);
             }
         }

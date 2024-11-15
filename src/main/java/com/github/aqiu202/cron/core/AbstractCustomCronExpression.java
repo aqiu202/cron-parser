@@ -95,25 +95,30 @@ public abstract class AbstractCustomCronExpression<S, T> extends AbstractCronExp
         CronField daysOfMonth = cron.getDaysOfMonth();
         if (daysOfMonth instanceof EnumerableCronField) {
             ValueResult vw = ((EnumerableCronField) daysOfMonth).findAfter(dateTime.getDayOfMonth(), dateTime);
-            int month0 = dateTime.getMonth();
-            dateTime.setDayOfMonthSmart(vw.getValue());
-            if (month0 == dateTime.getMonth() && vw.isOutOfBounds()) {
-                dateTime.plusMonths(1);
+            if (!vw.isValid() || vw.isOutOfBounds()) {
+                this.findMatchedDayOfMonthTimeWithNextMonth(cron, dateTime);
+                return;
             }
-            ValueResult mvw = months.findAfter(dateTime.getMonth(), dateTime);
-            dateTime.setMonth(mvw.getValue());
-            if (month0 != dateTime.getMonth()) {
-                dateTime.resetLeft(CronConstants.INDEX_MONTH, cron);
+            dateTime.setDayOfMonth(vw.getValue());
+            int month = dateTime.getMonth();
+            ValueResult mvw = months.findAfter(month, dateTime);
+            Integer monthVal = mvw.getValue();
+            if (!mvw.isValid()) {
+                this.setMonth(monthVal, dateTime);
+                this.findMatchedDayOfMonthTimeWithNextMonth(cron, dateTime);
+                return;
+            } else if (mvw.isOutOfBounds()) {
+                this.findMatchedDayOfMonthTimeWithNextYear(cron, dateTime);
+                return;
             }
-            int year0 = dateTime.getYear();
-            if (mvw.isOutOfBounds()) {
-                dateTime.plusYears(1);
-            }
+            dateTime.setMonth(monthVal);
             ValueResult yvw = cron.getYears().findAfter(dateTime.getYear(), dateTime);
-            dateTime.setYear(yvw.getValue());
-            if (year0 != dateTime.getYear()) {
-                dateTime.resetLeft(CronConstants.INDEX_YEAR, cron);
+            Integer yearVal = yvw.getValue();
+            if (!yvw.isValid()) {
+                this.findMatchedDayOfMonthTimeWithNextYear(yearVal, cron, dateTime);
+                return;
             }
+            dateTime.setYear(yearVal);
         } else if (daysOfMonth instanceof LastWeekdayCronField) {
             int year0 = dateTime.getYear();
             int month0 = dateTime.getMonth();
@@ -286,8 +291,8 @@ public abstract class AbstractCustomCronExpression<S, T> extends AbstractCronExp
     }
 
     private void setMonth(int value, DateTime<?> dateTime) {
-        dateTime.setMonth(value);
         this.resetDayOfMonth(dateTime);
+        dateTime.setMonth(value);
     }
 
     private void resetDayOfMonth(DateTime<?> dateTime) {
@@ -303,6 +308,18 @@ public abstract class AbstractCustomCronExpression<S, T> extends AbstractCronExp
     private void findMatchedDayOfMonthTimeWithNextMonth(Cron cron, DateTime<?> dateTime) {
         this.resetDayOfMonth(dateTime);
         dateTime.plusMonths(1);
+        this.findMatchedDayOfMonthTime(cron, dateTime);
+    }
+
+    private void findMatchedDayOfMonthTimeWithNextYear(Cron cron, DateTime<?> dateTime) {
+        this.setMonth(1, dateTime);
+        dateTime.plusYears(1);
+        this.findMatchedDayOfMonthTime(cron, dateTime);
+    }
+
+    private void findMatchedDayOfMonthTimeWithNextYear(int year, Cron cron, DateTime<?> dateTime) {
+        this.setMonth(1, dateTime);
+        dateTime.setYear(year);
         this.findMatchedDayOfMonthTime(cron, dateTime);
     }
 

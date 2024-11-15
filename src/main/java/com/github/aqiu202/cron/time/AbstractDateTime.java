@@ -33,4 +33,10 @@ public abstract class AbstractDateTime<T> implements DateTime<T> {
     }
 
     protected abstract void clearMilliSeconds();
+
+    @Override
+    public String toString() {
+        return this.getYear() + "-" + this.getMonth() + "-" + this.getDayOfMonth() + " "
+                + this.getHour() + ":" + this.getMinute() + ":" + this.getSecond();
+    }
 }

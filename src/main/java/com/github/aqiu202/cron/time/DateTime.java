@@ -2,7 +2,6 @@ package com.github.aqiu202.cron.time;
 
 import com.github.aqiu202.cron.core.Cron;
 import com.github.aqiu202.cron.core.CronConstants;
-import com.github.aqiu202.cron.util.CronUtils;
 
 public interface DateTime<T> extends DateTimeDefinition {
 
@@ -45,15 +44,6 @@ public interface DateTime<T> extends DateTimeDefinition {
 
     void setDayOfMonth(int dayOfMonth);
 
-    default void setDayOfMonthSmart(int dayOfMonth) {
-        int maxDays = CronUtils.getLastDayOfMonth(this.getMonth(), this.getYear());
-        if (dayOfMonth > maxDays) {
-            this.plusMonths(1);
-            this.setDayOfMonthSmart(dayOfMonth);
-        }
-        this.setDayOfMonth(dayOfMonth);
-    }
-
     void setMonth(int month);
 
     void setYear(int year);
@@ -77,7 +67,7 @@ public interface DateTime<T> extends DateTimeDefinition {
             case CronConstants.INDEX_YEAR:
                 this.setMonth(ci.getMonths().firstValue());
             case CronConstants.INDEX_MONTH:
-                this.setDayOfMonthSmart(ci.getDaysOfMonth().firstValue());
+                this.setDayOfMonth(ci.getDaysOfMonth().firstValue());
             case CronConstants.INDEX_DAYS_OF_MONTH:
                 this.setHour(ci.getHours().firstValue());
             case CronConstants.INDEX_HOUR:
