@@ -4,7 +4,8 @@ import com.github.aqiu202.cron.core.CronConstants;
 import com.github.aqiu202.cron.exp.InvalidCronException;
 import com.github.aqiu202.cron.util.CronUtils;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class RangeCronField extends EnumerableCronField {
@@ -86,11 +87,12 @@ public class RangeCronField extends EnumerableCronField {
         } else {
             int period = max - min + 1;
             end += period;
-            Integer[] arr = new Integer[end - start + 1];
-            for (int i = start - min, index = 0; i < end; i++, index++) {
-                arr[index] = min + i % period;
+            List<Integer> list = new ArrayList<>(end - start + 1);
+            for (int i = start - min; i < end; i++) {
+                list.add(min + i % period);
             }
-            return Arrays.asList(arr);
+            list.sort(Comparator.naturalOrder());
+            return list;
         }
     }
 
@@ -99,20 +101,21 @@ public class RangeCronField extends EnumerableCronField {
             return rangeSimple(start, end);
         } else {
             end += period;
-            Integer[] arr = new Integer[end - start + 1];
-            for (int i = start, index = 0; i <= end; i++, index++) {
-                arr[index] = i % period;
+            List<Integer> list = new ArrayList<>(end - start + 1);
+            for (int i = start; i <= end; i++) {
+                list.add(i % period);
             }
-            return Arrays.asList(arr);
+            list.sort(Comparator.naturalOrder());
+            return list;
         }
     }
 
     private static List<Integer> rangeSimple(int start, int end) {
-        Integer[] arr = new Integer[end - start + 1];
-        for (int i = start, index = 0; i <= end; i++, index++) {
-            arr[index] = i;
+        List<Integer> list = new ArrayList<>(end - start + 1);
+        for (int i = start; i <= end; i++) {
+            list.add(i);
         }
-        return Arrays.asList(arr);
+        return list;
     }
 
 }

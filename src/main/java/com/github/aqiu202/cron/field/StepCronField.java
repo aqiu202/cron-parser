@@ -4,7 +4,7 @@ import com.github.aqiu202.cron.core.CronConstants;
 import com.github.aqiu202.cron.exp.InvalidCronException;
 import com.github.aqiu202.cron.util.CronUtils;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StepCronField extends EnumerableCronField {
@@ -82,10 +82,10 @@ public class StepCronField extends EnumerableCronField {
             throw new InvalidCronException("间隔不能为0");
         }
         int length = (period - start - 1) / step;
-        Integer[] arr = new Integer[length + 1];
-        for (int i = start, index = 0; i < period; i += step, index++) {
-            arr[index] = i;
+        List<Integer> list = new ArrayList<>(length + 1);
+        for (int i = start; i < period; i += step) {
+            list.add(i);
         }
-        return Arrays.asList(arr);
+        return list;
     }
 }

@@ -100,6 +100,10 @@ public class SimpleCronParser implements CronParser {
                 throw new InvalidCronException(String.format("表达式格式异常-- %s符号只能用在DayOfMonth和DayOfWeek两个域", CronConstants.VAL_UNKNOWN));
             }
         }
+        // 单 token 直接解析，避免 SimpleCronFields + merge 的中间对象开销
+        if (fieldToken.indexOf(CronConstants.SEPARATOR_ENUM) == -1) {
+            return this.parseItem(fieldToken, index);
+        }
         SimpleCronFields result = new SimpleCronFields(index);
         StringTokenizer ist = new StringTokenizer(fieldToken, String.valueOf(CronConstants.SEPARATOR_ENUM));
         while (ist.hasMoreTokens()) {
@@ -134,7 +138,7 @@ public class SimpleCronParser implements CronParser {
                 throw new InvalidCronException(String.format("表达式异常-- %s 使用时必须与数字或者%s组合使用",
                         CronConstants.SEPARATOR_WEEKDAY, CronConstants.SEPARATOR_LAST));
             }
-            return new WeekdayCronField(index, this.extractNumber(token, token.indexOf(CronConstants.SEPARATOR_WEEKDAY)));
+            return new WeekdayCronField(index, this.strToInt(token.substring(0, token.length() - 1)));
         } else if ((i = token.indexOf(CronConstants.SEPARATOR_LAST)) > -1) {
             // L仅支持在DaysOfMonth和DaysOfWeek域使用
             if (index != CronConstants.INDEX_DAYS_OF_MONTH && index != CronConstants.INDEX_DAYS_OF_WEEK) {
@@ -149,52 +153,41 @@ public class SimpleCronParser implements CronParser {
                 throw new InvalidCronException(String.format("表达式格式异常-- %s 用法错误", CronConstants.SEPARATOR_LAST));
             } else {
                 // 如果在DaysOfWeek域 L代表最后一个星期日（即1L）
-                return new LastCronField(index, i == 0 ? 0 : this.extractNumber(token, i));
+                return new LastCronField(index, i == 0 ? 0 : this.strToInt(token.substring(0, i)));
             }
         } else if ((i = token.indexOf(CronConstants.SEPARATOR_INDEX)) > -1) {
             // #仅支持在DaysOfWeek域使用
             if (index != CronConstants.INDEX_DAYS_OF_WEEK) {
                 throw new InvalidCronException(String.format("表达式格式异常-- 符号 %s 只能用在DaysOfWeek域", CronConstants.SEPARATOR_INDEX));
             }
-            int[] values = this.extractNumbers(token, i);
-            return new IndexCronField(index, values[0], values[1]);
+            int val1 = this.strToInt(token.substring(0, i));
+            int val2 = this.strToInt(token.substring(i + 1));
+            return new IndexCronField(index, val1, val2);
         } else if ((i = token.indexOf(CronConstants.SEPARATOR_RANGE)) > -1) {
-            int[] values = this.extractNumbers(token, i, index);
-            return new RangeCronField(index, values[0], values[1]);
+            String val1 = token.substring(0, i);
+            String val2 = token.substring(i + 1);
+            int start = CronConstants.VAL_EVERY.equals(val1) ? this.handleEvery(index) : this.parseTokenInt(val1, index);
+            int end = this.parseTokenInt(val2, index);
+            return new RangeCronField(index, start, end);
         } else if ((i = token.indexOf(CronConstants.SEPARATOR_STEP)) > -1) {
-            int[] values = this.extractNumbers(token, i, index);
-            return new StepCronField(index, values[0], values[1]);
+            String val1 = token.substring(0, i);
+            String val2 = token.substring(i + 1);
+            int start = CronConstants.VAL_EVERY.equals(val1) ? this.handleEvery(index) : this.parseTokenInt(val1, index);
+            int end = this.parseTokenInt(val2, index);
+            return new StepCronField(index, start, end);
         } else {
             return new EnumerableCronField(index, this.parseSimpleValues(token, index));
         }
     }
 
-    private int extractNumber(String token, int offset) {
-        return this.strToInt(token.substring(0, offset));
-    }
-
-    private int[] extractNumbers(String token, int offset) {
-        String val1 = token.substring(0, offset);
-        String val2 = token.substring(offset + 1);
-        return new int[]{this.strToInt(val1), this.strToInt(val2)};
-    }
-
-    private int[] extractNumbers(String token, int offset, int index) {
-        String val1 = token.substring(0, offset);
-        String val2 = token.substring(offset + 1);
-        Integer v = null;
-        if (CronConstants.VAL_EVERY.equals(val1)) {
-            v = this.handleEvery(index);
-        }
-        Function<String, Integer> function;
+    private int parseTokenInt(String token, int index) {
         if (index == CronConstants.INDEX_MONTH) {
-            function = this::parseMonth;
+            return this.parseMonth(token);
         } else if (index == CronConstants.INDEX_DAYS_OF_WEEK) {
-            function = this::parseDaysOfWeek;
+            return this.parseDaysOfWeek(token);
         } else {
-            function = this::strToInt;
+            return this.strToInt(token);
         }
-        return new int[]{v == null ? function.apply(val1) : v, function.apply(val2)};
     }
 
     private List<Integer> parseSimpleValues(String token, int index) {
