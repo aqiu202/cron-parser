@@ -5,6 +5,7 @@ import com.github.aqiu202.cron.exp.InvalidCronException;
 import com.github.aqiu202.cron.util.CronUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -111,11 +112,11 @@ public class RangeCronField extends EnumerableCronField {
     }
 
     private static List<Integer> rangeSimple(int start, int end) {
-        List<Integer> list = new ArrayList<>(end - start + 1);
-        for (int i = start; i <= end; i++) {
-            list.add(i);
+        Integer[] arr = new Integer[end - start + 1];
+        for (int i = start, index = 0; i <= end; i++, index++) {
+            arr[index] = i;
         }
-        return list;
+        return Arrays.asList(arr);
     }
 
 }
