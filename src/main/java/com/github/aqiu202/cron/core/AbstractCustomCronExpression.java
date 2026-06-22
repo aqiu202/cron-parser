@@ -112,6 +112,9 @@ public abstract class AbstractCustomCronExpression<S, T> extends AbstractCronExp
                 return;
             }
             dateTime.setMonth(monthVal);
+            if (month != monthVal) {
+                dateTime.resetLeft(CronConstants.INDEX_MONTH, cron);
+            }
             ValueResult yvw = cron.getYears().findAfter(dateTime.getYear(), dateTime);
             Integer yearVal = yvw.getValue();
             if (!yvw.isValid()) {
@@ -119,6 +122,9 @@ public abstract class AbstractCustomCronExpression<S, T> extends AbstractCronExp
                 return;
             }
             dateTime.setYear(yearVal);
+            if (yearVal != dateTime.getYear()) {
+                dateTime.resetLeft(CronConstants.INDEX_YEAR, cron);
+            }
         } else if (daysOfMonth instanceof LastWeekdayCronField) {
             int year0 = dateTime.getYear();
             int month0 = dateTime.getMonth();
